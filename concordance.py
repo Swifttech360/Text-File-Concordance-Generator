@@ -11,10 +11,13 @@ Then, the program displays a list of every word within the file's text, along wi
 while True:
     seenText = []
     fileSelection = input('Please select a local text file:  ')
-    if "." not in fileSelection:
-        print('\nInvalid Input.\n'
-              "Be sure to include the file's add in all inputs (i.e., .txt, .rtf, .md).")
-        continue
+
+    """Unnecessary code commented below"""
+    #if "." not in fileSelection:
+     #   print('\nInvalid Input.\n'
+      #        "Be sure to include the file's add in all inputs (i.e., .txt, .rtf, .md).")
+       # continue
+    
     try:
         text = open(fileSelection, 'r').read()
     except FileNotFoundError:
