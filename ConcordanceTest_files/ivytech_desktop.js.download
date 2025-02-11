@@ -1,0 +1,194 @@
+////////////////////////////////////////////////////
+// DESIGN TOOLS CONFIG                            //
+////////////////////////////////////////////////////
+// Copyright (C) 2017  Utah State University
+
+// customizations to prevent loading begin here
+// i don't know what i'm doing here don't make fun of me
+
+if (ENV['ACCOUNT_ID'] != "16362") {
+	
+	let head = document.getElementsByTagName('HEAD')[0];
+	let cidicss1 = document.createElement('link');
+	let cidicss2 = document.createElement('link');
+	cidicss1.rel = 'stylesheet';
+	cidicss1.type = 'text/css';
+	cidicss1.href = 'https://designtools.ciditools.com/css/themes.css'
+	cidicss2.rel = 'stylesheet';
+	cidicss2.type = 'text/css';
+	cidicss2.href = 'https://designtools.ciditools.com/css/inst_theme_overrides.css'
+	
+	var cidistyle = document.createElement('style');
+	cidistyle.innerHTML = `
+		:root {
+			--dt-color-primary: #006648;
+			--dt-color-primary-contrast: #FFFFFF;
+			--dt-color-primary-dark-text: #006648;
+			--dt-color-secondary: #8DC63F;
+			--dt-color-secondary-contrast: #000000;
+			--dt-color-secondary-dark-text: #006648;
+			--dt-color-accent: #939598;
+			--dt-color-accent-contrast: #000000;
+			--dt-color-graybg: #E6E6E6;
+			--dt-color-graybg-contrast: #000000;
+		}`;
+	
+	head.appendChild(cidicss1);
+	head.appendChild(cidicss2);
+	head.appendChild(cidistyle);
+
+// end customizations
+
+	var DT_variables = {
+		iframeID: '',
+		// Path to the hosted USU Design Tools
+		path: 'https://designtools.ciditools.com/',
+		templateCourse: '1101554',
+		// OPTIONAL: Button will be hidden from view until launched using shortcut keys
+		hideButton: true,
+		// OPTIONAL: Limit by course format
+		limitByFormat: false, // Change to true to limit by format
+		// adjust the formats as needed. Format must be set for the course and in this array for tools to load
+		formatArray: [
+			'online',
+			'on-campus',
+			'blended'
+		],
+		// OPTIONAL: Limit tools loading by users role
+		limitByRole: false, // set to true to limit to roles in the roleArray
+		// adjust roles as needed
+		roleArray: [
+			'student',
+			'teacher',
+			'admin'
+		],
+		// OPTIONAL: Limit tools to an array of Canvas user IDs
+		limitByUser: false, // Change to true to limit by user
+		// add users to array (Canvas user ID not SIS user ID)
+		userArray: [
+			'1234',
+			'987654'
+		]
+	};
+
+	// Run the necessary code when a page loads
+	$(document).ready(function () {
+	'use strict';
+	// This runs code that looks at each page and determines what controls to create
+	$.getScript(DT_variables.path + 'js/master_controls.js', function () {
+		console.log('master_controls.js loaded');
+	});
+	});
+};
+////////////////////////////////////////////////////
+// END DESIGN TOOLS CONFIG                        //
+////////////////////////////////////////////////////
+if ($.inArray('admin', ENV['current_user_roles']) >= 1){
+
+$('.context_external_tool_230303').remove();
+
+}
+
+////////////////////////////////////////////////////
+// ALLY Removed 10/03/2022 - Tony				  //
+////////////////////////////////////////////////////
+
+// WALKME SNIPPET - ADDED 09/08/22 by Tony
+// UPDATED 03/21/22 by Tony
+if (window.location.hostname.includes("ivytech.beta.instructure.com"))
+{
+	var walkme = document.createElement('script'); walkme.type = 'text/javascript'; walkme.async = true; walkme.src = 'https://cdn.walkme.com/users/823ab5e443814f35b9eb8c1ed2827ee3/beta/walkme_823ab5e443814f35b9eb8c1ed2827ee3_https.js'; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(walkme, s); window._walkmeConfig = {smartLoad:true}; 
+}
+else if (window.location.hostname.includes("ivytech.test.instructure.com"))
+{
+	var walkme = document.createElement('script'); walkme.type = 'text/javascript'; walkme.async = true; walkme.src = 'https://cdn.walkme.com/users/823ab5e443814f35b9eb8c1ed2827ee3/test/walkme_823ab5e443814f35b9eb8c1ed2827ee3_https.js'; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(walkme, s); window._walkmeConfig = {smartLoad:true}; 
+}
+else if (!window.location.pathname.includes("/speed_grader")) {
+	var walkme = document.createElement('script'); walkme.type = 'text/javascript'; walkme.async = true; walkme.src = 'https://cdn.walkme.com/users/823ab5e443814f35b9eb8c1ed2827ee3/walkme_823ab5e443814f35b9eb8c1ed2827ee3_https.js'; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(walkme, s); window._walkmeConfig = {smartLoad:true};
+}
+
+// ITCC_JS_0001 added 12/05/2022 by Tony
+if (ENV['active_context_tab'] == 'settings') {
+	let p = document.createElement("p");
+	p.innerHTML = '<strong>Additionally, any existing content pairings with Ivy+ will be reset and may require a <a href="https://my.ivytech.edu/myivy?id=sc_cat_item&sys_id=533dda10dba945105030fe1b689619e2">request in the MyIvy Service Portal</a> to restore. Are you sure you wish to continue?</strong>';
+	document.querySelector('#reset_course_content_dialog p').after(p);
+}
+
+// add user home campus to user information page
+
+async function home_campus() {
+	//if(ENV["context_asset_string"] && ENV["context_asset_string"].split('_')[0] == "user")
+	if(window.location.pathname.includes("/users/"))
+    {
+		let user_id = ENV["USER_ID"];
+		//let user_id = ENV["context_asset_string"].split('_')[1];
+		let integration_id = await getIntegrationId(user_id);
+		if (integration_id) {
+			let home_campus = integrationIdToCampus(integration_id);
+			let tr = document.createElement("tr");
+			tr.innerHTML = '<th>Home Campus:</th><td class="home_campus">'+home_campus+'</td>';
+			document.querySelector(".time_zone").parentElement.after(tr);
+		}
+	}
+};
+
+async function getIntegrationId(user_id) {
+	let response = await fetch('/api/v1/users/' + user_id)
+	let data = await response.text();
+	data = JSON.parse(data);
+	return data["integration_id"];
+};
+
+function integrationIdToCampus(integration_id) {
+	campus_code = integration_id.split('-')[1];
+	switch (campus_code) {
+		case "AN":
+			return("Anderson");
+		case "BL":
+			return("Bloomington");
+		case "CL":
+			return("Columbus");
+		case "EV":
+			return("Evansville");
+		case "DA":
+			return("Distance Apprenticeship");
+		case "FW":
+			return("Fort Wayne");
+		case "HC":
+			return("Hamilton County");
+		case "IN":
+			return("Indianapolis");
+		case "IO":
+			return("IvyOnline");
+		case "KM":
+			return("Kokomo");
+		case "LF":
+			return("Lafayette");
+		case "LC":
+			return("Lake County");
+		case "LB":
+			return("Lawrenceburg");
+		case "MD":
+			return("Madison");
+		case "MR":
+			return("Marion");
+		case "MN":
+			return("Muncie");
+		case "RM":
+			return("Richmond");
+		case "SL":
+			return("Sellersburg");
+		case "SE":
+			return("South Bend/Elkhart");
+		case "SW":
+			return("Statewide");
+		case "TH":
+			return("Terre Haute");
+		case "VP":
+			return("Valparaiso");
+		default:
+			return("Undefined"); 
+	}
+}		
+
+home_campus();

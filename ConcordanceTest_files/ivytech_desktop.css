@@ -1,0 +1,5 @@
+aside#right-side button#start_new_course.element_toggler.btn.button-sidebar-wide {
+      display: none;
+}
+
+div#batch_check {display:none;}
